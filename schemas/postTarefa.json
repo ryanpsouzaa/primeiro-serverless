@@ -1,0 +1,16 @@
+{
+  "type" : "object",
+
+  "properties" : {
+    "nome" : {
+      "type" : "string"
+    },
+    "descricao" : {
+      "type" : "string"
+    },
+    "feito" : {
+      "type" : "boolean"
+    }
+  },
+  "required" : ["nome", "descricao", "feito"]
+}
