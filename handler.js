@@ -1,21 +1,14 @@
-const {MongoClient} = require("mongodb");
+import conectarBancoDados from "./config/dbConnect.js";
+import tarefa from "./schemas/Tarefa.js";
 
-async function conectarBancoDados(){
-  const client = new MongoClient(process.env.MONGODB_CONNECTIONSTRING);
-  const connection = await client.connect();
+export async function getTarefas(event) {
+  await conectarBancoDados();
 
-  return connection.db(process.env.MONGODB_DB_NAME);
-}
-
-module.exports.getTarefas = async (event) => {
-  const client = await conectarBancoDados();
-  const collection = client.collection('tarefas');
-  const tarefas = await collection.find({}).toArray();
+  const tarefas = await tarefa.find({});
   return {
     statusCode: 200,
     body: JSON.stringify(tarefas)
   }
-  
 }
 
 function extrairBody(event){
@@ -28,22 +21,20 @@ function extrairBody(event){
   return JSON.parse(event.body);
 }
 
-module.exports.postTarefas = async (event) => {
+export async function postTarefas(event){
   const body = extrairBody(event);
-  const client = await conectarBancoDados();
-  const collection = client.collection("tarefas");
-  const { insertedId } = await collection.insertOne(body);
+  await conectarBancoDados();
+
+  const tarefaCadastrada = await tarefa.create(body);
+
   return{
     statusCode: 201,
     headers: {
       "Content-Type" : "application/json"
     },
     body: JSON.stringify({
-      tarefaCriada: insertedId,
-      __hypermedia:{
-          href: "/tarefas.html",
-          query: {id: insertedId}
-      }
+      mensagem: "Tarefa cadastrada com sucesso",
+      tarefa: tarefaCadastrada
     })
   }
 }

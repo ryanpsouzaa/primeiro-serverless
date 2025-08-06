@@ -11,7 +11,7 @@ params:
   default:
     dbName: ryan-serverless
   dev:
-    connectionString: mongodb://localhost:27017/${self:params.default.dbName}
+    connectionString: mongodb://root:root@localhost:27017/ryan-serverless?authSource=admin
 
 provider:
   name: aws
