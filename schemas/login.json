@@ -1,0 +1,15 @@
+{
+  "type" : "object",
+  
+  "properties" : {
+    "usernameLogin" : {
+      "type" : "string",
+      "minLenght" : 1
+    },
+    "senhaLogin" : {
+      "type" : "string",
+      "minLenght" : 1
+    }
+
+  }, "required" : ["usernameLogin", "senhaLogin"]
+}
