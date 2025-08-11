@@ -4,7 +4,7 @@ import usuario from "./schemas/Usuario.js";
 import pkg from "jsonwebtoken";
 import crypto from "crypto";
 
-const {sign, verify} = pkg;
+export const {sign, verify} = pkg;
 
 export async function getTarefas(event) {
   const autenticacaoResultado = await autorizar(event);
@@ -48,7 +48,7 @@ export async function postTarefas(event){
   }
 }
 
-async function autorizar(event){
+export async function autorizar(event){
   const {authorization} = event.headers;
   if(!authorization){
     return{
@@ -61,19 +61,21 @@ async function autorizar(event){
   if(type != "Bearer" || !token){
     return{
       statusCode: 401,
-      body: JSON.stringify("Token deve ser enviado")
+      body: JSON.stringify("Tipo de token inválido")
     }
   }
 
-  const tokenDecoded = verify(token, process.env.JWT_SECRET,
-    { audience: "ryan-serverless" })
-  if(!tokenDecoded){
-    return{
+  try{
+    const tokenDecoded = verify(token, process.env.JWT_SECRET,
+      { audience: "ryan-serverless" });
+    return tokenDecoded;
+
+  } catch(error){
+    return {
       statusCode: 401,
       body: JSON.stringify({error: "Token inválido"})
     }
   }
-  return tokenDecoded;
 }
 
 export async function login(event){

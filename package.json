@@ -4,7 +4,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll --coverage"
   },
   "keywords": [],
   "author": "",
