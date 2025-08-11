@@ -1,82 +1,53 @@
-import {getTarefas, autorizar, login} from "../handler.js";
-import tarefa from "../schemas/Tarefa.js";
+const { getTarefas } = require("../handler.js");
 
-import { jest } from "@jest/globals";
-
-jest.unstable_mockModule("jsonwebtoken", ()=> ({
-  verify: jest.fn()
+jest.mock("../schemas/Tarefa.js", () => ({
+  find: jest.fn()
 }));
 
-const { autorizar } = await import("../handler.js");
-const jwt = await import("jsonwebtoken");
+jest.mock('../config/dbConnect', () => ({
+  conectarBancoDados: jest.fn().mockResolvedValue(),
+}));
 
-describe("Testando funcao de autorizar Token JWT", ()=>{
-  afterEach(() =>{
-    jest.clearAllMocks();
-  });
+const tarefa = require("../schemas/Tarefa.js");
 
-  it("Deveria retornar 401 por nao enviar authorization", async ()=>{
-
+describe("Teste getTarefas", () =>{
+  it("Deveria retornar todas as tarefas criadas", async () =>{
     //ARRANGE
-    const event = {headers: {}};
-    bodyEsperado = "\"Credenciais de Autorização devem ser enviadas\"";
+    tarefa.find.mockResolvedValue([
+      {nome:"TesteUm", descricao:"DescricaoUm", feito:false},
+      {nome:"TesteDois", descricao:"DescricaoDois", feito:true}
+    ]);
 
-    //ACT = autorizar
-    const response = await autorizar(event);
-
-    //ASSERT
-    expect(response.statusCode).toBe(401);
-    expect(response.body).toBe(bodyEsperado);
-  });
-
-  it("Deveria retornar 401 ao enviar tipo de token invalido", async ()=>{
-
-    //ARRANGE
-    const event = {headers :{authorization: "Basic abc123"}};
-    bodyEsperado = "\"Tipo de token inválido\"";
+    const event = {};
 
     //ACT
-    const response = await autorizar(event);
-
-    //ASSERT
-    expect(response.statusCode).toBe(401);
-    expect(response.body).toBe(bodyEsperado);
-  });
-
-  it("Deveria retornar 401 ao fornecer token invalido", async ()=>{
-
-    //ARRANGE
-    const event = {headers: {authorization: "Bearer 123123"}};
-    const bodyEsperado = "{\"error\":\"Token inválido\"}";
-
-    jwt.verify.mockImplementation(() =>{
-      throw new Error("Token inválido");
-    });
-
-    //ACT
-    const response = await autorizar(event);
+    const response = await getTarefas(event);
     
     //ASSERT
-    expect(response.statusCode).toBe(401);
-    expect(response.body).toBe(bodyEsperado);
+    const body = JSON.parse(response.body);
+    const tarefaUm = body[0];
+    const tarefaDois = body[1];
+
+    expect(response.statusCode).toBe(200);
+
+    expect(tarefaUm.nome).toBe("TesteUm");
+    expect(tarefaDois.nome).toBe("TesteDois");
+
+    expect(tarefaUm.feito).toBeFalsy();
+    expect(tarefaDois.feito).toBeTruthy();
   });
 
-  it("Deveria autorizar usuario", async ()=>{
+  it("Deveria retornar lista vazia", async () =>{
 
     //ARRANGE
-    const event = {headers : {authorization: "Bearer 123123"}};
-    
-    jwt.verify.mockImplementation(() =>{
-      return {
-        usernameLogin: "Teste",
-        id: "123",
-        aud: "Teste-serverless"
-      }});
+    tarefa.find.mockResolvedValue([]);
+    const event = {};
 
     //ACT
-    const response = await autorizar(event);
+    const response = await getTarefas(event);
 
     //ASSERT
-    expect(response.usernameLogin).toBe("Teste");
-  })
+    expect(response.statusCode).toBe(400);
+
+  });
 });

@@ -26,22 +26,19 @@ provider:
 
 functions:
 
-  login:
-    handler: handler.login
-    events:
-      - http:
-          path: /login
-          method: post
-          request:
-            schemas:
-              application/json: ${file(./schemas/login.json)}
-
   getTarefas:
     handler: handler.getTarefas
     timeout: 10
     events:
       - httpApi:
           path: /tarefas
+          method: get
+
+  getTarefa:
+    handler: handler.consultarTarefa
+    events:
+      - httpApi:
+          path: /tarefas/{id}
           method: get
 
   postTarefas:
@@ -54,4 +51,27 @@ functions:
             schemas:
               application/json: ${file(./schemas/postTarefa.json)}
 
+  deleteTarefas:
+    handler: handler.deletarTarefa
+    events:
+      - http:
+          path: /tarefas/{id}
+          method: delete
+  
+  putTarefas:
+    handler: handler.atualizarTarefa
+    events:
+      - http:
+          path: /tarefas/{id}
+          method: put
+          request:
+            schemas:
+              application/json: ${file(./schemas/putTarefa.json)}
+
+  tarefaFeita:
+    handler: handler.tarefaRealizada
+    events:
+      - httpApi:
+          path: /tarefas/feito/{id}
+          method: get
   

@@ -1,20 +1,64 @@
-import conectarBancoDados from "./config/dbConnect.js";
-import tarefa from "./schemas/Tarefa.js";
-import usuario from "./schemas/Usuario.js";
-import pkg from "jsonwebtoken";
-import crypto from "crypto";
+const {conectarBancoDados} = require("./config/dbConnect.js");
+const tarefa = require("./schemas/Tarefa.js");
+const usuario = require("./schemas/Usuario.js");
 
-export const {sign, verify} = pkg;
-
-export async function getTarefas(event) {
-  const autenticacaoResultado = await autorizar(event);
-  if(autenticacaoResultado.statusCode === 401) return autenticacaoResultado;
+async function getTarefas(event) {
   await conectarBancoDados();
 
   const tarefas = await tarefa.find({});
+  if(tarefas.length === 0){
+    return {
+      statusCode: 400,
+      body: JSON.stringify({erro: "Não há tarefas cadastradas no momento."})
+    }
+  }
   return {
     statusCode: 200,
     body: JSON.stringify(tarefas)
+  }
+}
+
+async function consultarTarefa(event){
+  await conectarBancoDados();
+
+  try{
+    const { id } = event.pathParameters;
+    const tarefaEncontrada = await tarefa.findById(id);
+
+    return{
+      statusCode: 200,
+      body: JSON.stringify(tarefaEncontrada)
+    }
+
+  }catch(error){
+    return{
+      statusCode: 404,
+      body: JSON.stringify({erro: "Tarefa não encontrada"})
+    }
+  }
+}
+
+async function tarefaRealizada(event){
+  const { id } = event.pathParameters;
+  conectarBancoDados();
+  try{
+    const tarefaRealizada = tarefa.findById(id);
+    if(tarefaRealizada.feito){
+      return {
+        statusCode: 400,
+        body: JSON.stringify({erro: "Tarefa já está realizada"})
+      }
+    }
+    tarefaRealizada.feito = true;
+    return{
+      statusCode: 200,
+      body: JSON.stringify({mensagem: "Tarefa realizada!"})
+    }
+  } catch(erro){
+    return{
+      statusCode: 404,
+      body: JSON.stringify({erro: "Tarefa não encontrada"})
+    }
   }
 }
 
@@ -28,9 +72,7 @@ function extrairBody(event){
   return JSON.parse(event.body);
 }
 
-export async function postTarefas(event){
-  const autenticacaoResultado = await autorizar(event);
-  if(autenticacaoResultado.statusCode === 401) return autenticacaoResultado
+async function postTarefas(event){
   const body = extrairBody(event);
   await conectarBancoDados();
 
@@ -48,70 +90,50 @@ export async function postTarefas(event){
   }
 }
 
-export async function autorizar(event){
-  const {authorization} = event.headers;
-  if(!authorization){
-    return{
-      statusCode: 401,
-      body: JSON.stringify("Credenciais de Autorização devem ser enviadas")
-    }
-  }
-
-  const [type, token] = authorization.split(" ")
-  if(type != "Bearer" || !token){
-    return{
-      statusCode: 401,
-      body: JSON.stringify("Tipo de token inválido")
-    }
-  }
+async function atualizarTarefa(event){
+  conectarBancoDados();
+  const putBody = extrairBody(event);
+  const { id } = event.pathParameters;
 
   try{
-    const tokenDecoded = verify(token, process.env.JWT_SECRET,
-      { audience: "ryan-serverless" });
-    return tokenDecoded;
-
-  } catch(error){
+    const putResultado = tarefa.findByIdAndUpdate(id, putBody);
     return {
-      statusCode: 401,
-      body: JSON.stringify({error: "Token inválido"})
+      statusCode: 200,
+      body: JSON.stringify(putResultado)
+    }
+
+  }catch (error){
+    return{
+      statusCode:404,
+      body: JSON.stringify({erro: "Tarefa não encontrada"})
     }
   }
 }
 
-export async function login(event){
-  const {usernameLogin, senhaLogin} = extrairBody(event);
+async function deletarTarefa(event){
+  const { id } = event.pathParameters;
   conectarBancoDados();
-  console.log(process.env.SALT);
-  
-  const senhaHash = crypto.pbkdf2Sync(
-    senhaLogin, process.env.SALT, 100000, 64, 'sha512').toString('hex');
-
-  console.log(senhaHash);
-  
-  const userEncontrado = await usuario.findOne({
-    username: usernameLogin, senha: senhaHash});
-
-  console.log(userEncontrado);
-
-  if(!userEncontrado){
+  try{
+    const deleteResultado = tarefa.findByIdAndDelete(id);
     return{
-      statusCode: 401,
-      body: JSON.stringify("Credenciais inválidas")
+      statusCode: 200,
+      body: JSON.stringify({message: "Tarefa excluída com sucesso"})
+    }
+  } catch(error){
+    return {
+      statusCode: 404,
+      body: JSON.stringify({erro: "Tarefa não encontrada"})
     }
   }
+}
 
-  const token = sign({usernameLogin, id: userEncontrado._id},
-    process.env.JWT_SECRET, {
-      expiresIn : "2h",
-      audience: "ryan-serverless"
-    })
+module.exports = {
+  getTarefas,
+  consultarTarefa,
+  postTarefas,
+  deletarTarefa,
+  atualizarTarefa,
+  tarefaRealizada
 
-  return{
-    statusCode: 200,
-    headers: {
-      'Content-Type' : "application/json"
-    },
-    body: JSON.stringify({token})
-  }
 }
 
