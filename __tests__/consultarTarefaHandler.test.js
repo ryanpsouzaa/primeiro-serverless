@@ -1,34 +1,33 @@
 import { consultarTarefa } from "../handler.js";
 import Tarefa from "../schemas/Tarefa.js";
 
-jest.mock("../schemas/Tarefa.js", () => ({
-  findById: jest.fn()
-}));
+beforeAll(() => {
+  jest.resetAllMocks();
+})
 
 jest.mock('../config/dbConnect.js', () => ({
   conectarBancoDados: jest.fn().mockResolvedValue(),
 }));
+const spyFind = jest.spyOn(Tarefa, "findById");
 
 describe("Teste no consultarTarefa", ()=>{
   it("Deveria retornar 404 ao consultar Tarefa inexistente", async ()=>{
     //ARRANGE
     const event = {pathParameters: {id: 10000}};
 
-    Tarefa.findById.mockResolvedValue(null);
+    spyFind.mockResolvedValue(null);
 
     //ACT
     const response = await consultarTarefa(event);
-    //ASSERT
 
+    //ASSERT
     expect(response.statusCode).toBe(404);
     expect(response.body).toMatch(/Tarefa não encontrada/);
   });
 
   it("Deveria retornar 400 ao dar falha para encontrar Tarefa", async ()=>{
     //ARRANGE
-    Tarefa.findById.mockImplementation(() => {
-      throw new Error("ERRO - Mock");
-    });
+    spyFind.mockRejectedValue(new Error("ERRO - Mock"));
 
     const event = {pathParameters: {id: 10000}};
 
@@ -42,9 +41,7 @@ describe("Teste no consultarTarefa", ()=>{
 
   it("Deveria retornar 200 ao consultar Tarefa existente", async() =>{
     //ARRANGE
-    Tarefa.findById.mockResolvedValue({
-      nome: "TarefaTeste", descricao: "Descricao TarefaTeste", feito: true
-    });
+    spyFind.mockResolvedValue({nome: "TarefaTeste", descricao: "Descricao TarefaTeste", feito: true});
 
     const event = {pathParameters: {id: 100}}
 
@@ -58,5 +55,5 @@ describe("Teste no consultarTarefa", ()=>{
     expect(tarefa.nome).toBe("TarefaTeste");
     expect(tarefa.descricao).toBe("Descricao TarefaTeste");
     expect(tarefa.feito).toBeTruthy();
-  })
-})
+  });
+});

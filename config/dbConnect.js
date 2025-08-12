@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 let estaConectado;
 
-async function conectarBancoDados(){
+export async function conectarBancoDados(){
   if(estaConectado) return;
 
   try{
@@ -19,4 +19,4 @@ async function conectarBancoDados(){
   }
 };
 
-export default conectarBancoDados;
+export default {conectarBancoDados};

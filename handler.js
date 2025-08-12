@@ -2,7 +2,7 @@ import {conectarBancoDados} from "./config/dbConnect.js";
 import tarefa from "./schemas/Tarefa.js";
 import usuario from "./schemas/Usuario.js";
 
-async function getTarefas(event) {
+export async function getTarefas(event) {
   await conectarBancoDados();
 
   const tarefas = await tarefa.find({});
@@ -18,7 +18,7 @@ async function getTarefas(event) {
   }
 }
 
-async function consultarTarefa(event){
+export async function consultarTarefa(event){
   await conectarBancoDados();
 
   try{
@@ -45,7 +45,7 @@ async function consultarTarefa(event){
   }
 }
 
-async function tarefaRealizada(event){
+export async function tarefaRealizada(event){
   const { id } = event.pathParameters;
   conectarBancoDados();
   try{
@@ -90,7 +90,7 @@ function extrairBody(event){
   return JSON.parse(event.body);
 }
 
-async function postTarefas(event){
+export async function postTarefas(event){
   const body = extrairBody(event);
 
   if(body?.statusCode){
@@ -120,7 +120,7 @@ async function postTarefas(event){
   }
 }
 
-async function atualizarTarefa(event){
+export async function atualizarTarefa(event){
   conectarBancoDados();
   const putBody = extrairBody(event);
   if(putBody?.statusCode){
@@ -150,7 +150,7 @@ async function atualizarTarefa(event){
   }
 }
 
-async function deletarTarefa(event){
+export async function deletarTarefa(event){
   const { id } = event.pathParameters;
   conectarBancoDados();
   try{

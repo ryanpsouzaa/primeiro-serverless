@@ -1,12 +1,15 @@
 import { postTarefas } from "../handler.js";
 import Tarefa from "../schemas/Tarefa.js";
+import {jest} from "@jest/globals";
 
-jest.mock("../schemas/Tarefa.js", () => ({
-  create: jest.fn()
-}));
+beforeEach(()=>{
+  jest.resetAllMocks();
+})
+const spyFind = jest.spyOn(Tarefa, "create");
 
+import conectarBancoDados from "../config/dbConnect.js";
 jest.mock("../config/dbConnect.js", () => ({
-  conectarBancoDados: jest.fn().mockResolvedValue()
+  default: jest.fn().mockResolvedValue()
 }));
 
 describe("Teste postTarefas", ()=>{

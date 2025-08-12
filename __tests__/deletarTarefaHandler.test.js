@@ -1,21 +1,23 @@
 import { deletarTarefa } from "../handler.js";
+import Tarefa from "../schemas/Tarefa.js";
 
-jest.mock("../schemas/Tarefa.js", ()=> ({
-  findByIdAndDelete: jest.fn()
-}));
+
+beforeEach(()=>{
+  jest.resetAllMocks();
+});
+
+const spyFind = jest.spyOn(Tarefa, "findByIdAndDelete");
 
 jest.mock("../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
-
-const Tarefa = require("../schemas/Tarefa.js");
 
 describe("Teste deletarTarefa", ()=>{
   it("Deveria retornar 404 por Tarefa inexistente", async ()=>{
     //ARRANGE
     const event = {pathParameters: {id: 1000}};
 
-    Tarefa.findByIdAndDelete.mockResolvedValue(null);
+    spyFind.mockResolvedValue(null);
 
     //ACT
     const response = await deletarTarefa(event);
@@ -29,8 +31,7 @@ describe("Teste deletarTarefa", ()=>{
     //ARRANGE
     const event = {pathParameters: {id: 1000}}
 
-    Tarefa.findByIdAndDelete.mockRejectedValue(new Error("ERRO - Mock"));
-    
+    spyFind.mockRejectValue(new Error("ERROR - Mock"));    
     //ACT
     const response = await deletarTarefa(event);
 
@@ -43,7 +44,7 @@ describe("Teste deletarTarefa", ()=>{
     //ARRANGE
     const event = {pathParameters: {id: 1000}}
 
-    Tarefa.findByIdAndDelete.mockResolvedValue({nome: "TESTE"});
+    spyFind.mockResolvedValue({nome: "TESTE"});
 
     //ACT
     const response = await deletarTarefa(event);

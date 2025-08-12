@@ -1,7 +1,7 @@
 {
   "name": "primeiro-projeto-serverless",
   "version": "1.0.0",
-  "type" : "modules",
+  "type" : "module",
   "main": "index.js",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
