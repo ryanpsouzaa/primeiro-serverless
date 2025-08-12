@@ -79,5 +79,5 @@ describe("Teste em atualizarTarefa", ()=> {
     const tarefaAlterada = JSON.parse(response.body);
     expect(response.statusCode).toBe(200);
     expect(tarefaAlterada.descricao).toBe(descricaoAlterada);
-  })
-})
+  });
+});
