@@ -25,6 +25,13 @@ async function consultarTarefa(event){
     const { id } = event.pathParameters;
     const tarefaEncontrada = await tarefa.findById(id);
 
+    if(!tarefaEncontrada){
+      return{
+        statusCode: 404,
+        body: JSON.stringify({erro: "Tarefa não encontrada"})
+      }
+    }
+
     return{
       statusCode: 200,
       body: JSON.stringify(tarefaEncontrada)
@@ -32,8 +39,8 @@ async function consultarTarefa(event){
 
   }catch(error){
     return{
-      statusCode: 404,
-      body: JSON.stringify({erro: "Tarefa não encontrada"})
+      statusCode: 500,
+      body: JSON.stringify({erro: "Erro interno no servidor"})
     }
   }
 }
@@ -74,19 +81,31 @@ function extrairBody(event){
 
 async function postTarefas(event){
   const body = extrairBody(event);
+
+  if(body?.statusCode){
+    return body;
+  }
+
   await conectarBancoDados();
 
-  const tarefaCadastrada = await tarefa.create(body);
+  try{
+    const tarefaCadastrada = await tarefa.create(body);
+    return{
+      statusCode: 201,
+      headers: {
+        "Content-Type" : "application/json"
+      },
+      body: JSON.stringify({
+        mensagem: "Tarefa cadastrada com sucesso",
+        tarefa: tarefaCadastrada
+      })
+    }
 
-  return{
-    statusCode: 201,
-    headers: {
-      "Content-Type" : "application/json"
-    },
-    body: JSON.stringify({
-      mensagem: "Tarefa cadastrada com sucesso",
-      tarefa: tarefaCadastrada
-    })
+  }catch(erro){
+    return{
+      statusCode: 500,
+      body: JSON.stringify({erro: "Erro interno no servidor"})
+    }
   }
 }
 
@@ -114,15 +133,23 @@ async function deletarTarefa(event){
   const { id } = event.pathParameters;
   conectarBancoDados();
   try{
-    const deleteResultado = tarefa.findByIdAndDelete(id);
+    const deleteResultado = await tarefa.findByIdAndDelete(id);
+    if(!deleteResultado){
+      return{
+        statusCode: 404,
+        body: JSON.stringify({erro: "Tarefa não encontrada"})
+      }
+    }
+
     return{
       statusCode: 200,
       body: JSON.stringify({message: "Tarefa excluída com sucesso"})
     }
+
   } catch(error){
     return {
-      statusCode: 404,
-      body: JSON.stringify({erro: "Tarefa não encontrada"})
+      statusCode: 500,
+      body: JSON.stringify({erro: "Erro interno no servidor"})
     }
   }
 }
