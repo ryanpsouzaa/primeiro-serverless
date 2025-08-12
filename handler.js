@@ -49,7 +49,14 @@ async function tarefaRealizada(event){
   const { id } = event.pathParameters;
   conectarBancoDados();
   try{
-    const tarefaRealizada = tarefa.findById(id);
+    const tarefaRealizada = await tarefa.findById(id);
+    if(!tarefaRealizada){
+      return{
+        statusCode: 404,
+        body: JSON.stringify({erro: "Tarefa não encontrada"})
+      }
+    }
+
     if(tarefaRealizada.feito){
       return {
         statusCode: 400,
@@ -57,14 +64,18 @@ async function tarefaRealizada(event){
       }
     }
     tarefaRealizada.feito = true;
+    await tarefaRealizada.save();
     return{
       statusCode: 200,
-      body: JSON.stringify({mensagem: "Tarefa realizada!"})
+      body: JSON.stringify({
+        mensagem: "Tarefa realizada!",
+        tarefa: tarefaRealizada
+      })
     }
   } catch(erro){
     return{
-      statusCode: 404,
-      body: JSON.stringify({erro: "Tarefa não encontrada"})
+      statusCode: 500,
+      body: JSON.stringify({erro: "Erro interno no servidor"})
     }
   }
 }
@@ -112,10 +123,20 @@ async function postTarefas(event){
 async function atualizarTarefa(event){
   conectarBancoDados();
   const putBody = extrairBody(event);
+  if(putBody?.statusCode){
+    return putBody;
+  }
   const { id } = event.pathParameters;
 
   try{
-    const putResultado = tarefa.findByIdAndUpdate(id, putBody);
+    const putResultado = await tarefa.findByIdAndUpdate(id, putBody);
+    if(!putResultado){
+      return{
+        statusCode: 404,
+        body: JSON.stringify({erro: "Tarefa não encontrada"})
+      }
+    }
+
     return {
       statusCode: 200,
       body: JSON.stringify(putResultado)
@@ -123,8 +144,8 @@ async function atualizarTarefa(event){
 
   }catch (error){
     return{
-      statusCode:404,
-      body: JSON.stringify({erro: "Tarefa não encontrada"})
+      statusCode: 500,
+      body: JSON.stringify({erro: "Erro interno no servidor"})
     }
   }
 }
