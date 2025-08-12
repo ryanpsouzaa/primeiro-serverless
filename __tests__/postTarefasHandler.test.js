@@ -1,5 +1,5 @@
-const conectarBancoDados = require("../config/dbConnect");
-const { postTarefas } = require("../handler.js");
+import { postTarefas } from "../handler.js";
+import Tarefa from "../schemas/Tarefa.js";
 
 jest.mock("../schemas/Tarefa.js", () => ({
   create: jest.fn()
@@ -8,8 +8,6 @@ jest.mock("../schemas/Tarefa.js", () => ({
 jest.mock("../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
-
-const Tarefa = require("../schemas/Tarefa.js");
 
 describe("Teste postTarefas", ()=>{
   it("Deveria retornar 422 por body inexistente", async ()=>{

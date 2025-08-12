@@ -1,4 +1,4 @@
-const Tarefa = require("../schemas/Tarefa.js");
+import Tarefa from "../schemas/Tarefa.js";
 
 describe("Testes no Schema Tarefa", ()=>{
 

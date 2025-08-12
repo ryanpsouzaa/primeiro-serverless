@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1755002334307" clover="3.2.0">
-  <project timestamp="1755002334308" name="All files">
+<coverage generated="1755024254750" clover="3.2.0">
+  <project timestamp="1755024254750" name="All files">
     <metrics statements="210" coveredstatements="210" conditionals="25" coveredconditionals="25" methods="7" coveredmethods="7" elements="242" coveredelements="242" complexity="0" loc="210" ncloc="210" packages="2" files="3" classes="3"/>
     <package name="primeiro-projeto-serverless">
       <metrics statements="186" coveredstatements="186" conditionals="25" coveredconditionals="25" methods="7" coveredmethods="7"/>

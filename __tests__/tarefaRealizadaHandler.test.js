@@ -1,5 +1,9 @@
-const { tarefaRealizada } = require("../handler.js");
+import { tarefaRealizada } from "../handler.js";
+import Tarefa from "../schemas/Tarefa.js";
 
+beforeEach(() =>{
+  jest.resetAllMocks();
+})
 
 jest.mock("../schemas/Tarefa.js", () => ({
   findById: jest.fn(),
@@ -10,11 +14,10 @@ jest.mock("../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
 
-const Tarefa = require("../schemas/Tarefa.js");
-
 describe("Teste de tarefaRealizada", ()=>{
   it("Deveria retornar 404 ao consultar Tarefa inexistente", async() =>{
     //ARRANGE
+    const spyFind = jest.spyOn(Tarefa, "findById")
     const event = {pathParameters: {id: 1000}};
     Tarefa.findById.mockResolvedValue(null);
 

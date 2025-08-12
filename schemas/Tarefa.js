@@ -1,4 +1,5 @@
-const mongoose = require("mongoose");
+
+import mongoose from "mongoose";
 
 const tarefaSchema = new mongoose.Schema( {
   id: {type: mongoose.Schema.Types.ObjectId },
@@ -10,4 +11,4 @@ const tarefaSchema = new mongoose.Schema( {
 
 const tarefa = mongoose.model("tarefas", tarefaSchema);
 
-module.exports = tarefa;
+export default tarefa;

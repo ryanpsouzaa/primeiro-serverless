@@ -1,4 +1,5 @@
-const { consultarTarefa } = require("../handler.js");
+import { consultarTarefa } from "../handler.js";
+import Tarefa from "../schemas/Tarefa.js";
 
 jest.mock("../schemas/Tarefa.js", () => ({
   findById: jest.fn()
@@ -7,8 +8,6 @@ jest.mock("../schemas/Tarefa.js", () => ({
 jest.mock('../config/dbConnect.js', () => ({
   conectarBancoDados: jest.fn().mockResolvedValue(),
 }));
-
-const Tarefa = require("../schemas/Tarefa.js");
 
 describe("Teste no consultarTarefa", ()=>{
   it("Deveria retornar 404 ao consultar Tarefa inexistente", async ()=>{

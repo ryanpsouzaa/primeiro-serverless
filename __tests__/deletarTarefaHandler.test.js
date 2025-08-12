@@ -1,4 +1,4 @@
-const { deletarTarefa } = require("../handler.js");
+import { deletarTarefa } from "../handler.js";
 
 jest.mock("../schemas/Tarefa.js", ()=> ({
   findByIdAndDelete: jest.fn()

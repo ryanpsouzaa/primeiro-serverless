@@ -1,6 +1,6 @@
-const {conectarBancoDados} = require("./config/dbConnect.js");
-const tarefa = require("./schemas/Tarefa.js");
-const usuario = require("./schemas/Usuario.js");
+import {conectarBancoDados} from "./config/dbConnect.js";
+import tarefa from "./schemas/Tarefa.js";
+import usuario from "./schemas/Usuario.js";
 
 async function getTarefas(event) {
   await conectarBancoDados();
@@ -175,13 +175,12 @@ async function deletarTarefa(event){
   }
 }
 
-module.exports = {
+export default {
   getTarefas,
   consultarTarefa,
   postTarefas,
   deletarTarefa,
   atualizarTarefa,
   tarefaRealizada
-
 }
 
