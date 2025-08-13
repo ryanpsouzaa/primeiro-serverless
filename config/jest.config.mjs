@@ -197,4 +197,10 @@ const config = {
   // watchman: true,
 };
 
-export default config;
+export default {
+  testEnvironment: "node",
+  transform: {},
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  }
+};

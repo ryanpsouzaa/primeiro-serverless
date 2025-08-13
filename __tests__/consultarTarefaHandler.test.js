@@ -1,13 +1,16 @@
-import { consultarTarefa } from "../handler.js";
-import Tarefa from "../schemas/Tarefa.js";
+import { jest } from "@jest/globals";
+
+jest.mock('../config/dbConnect.js', () => ({
+  conectarBancoDados: jest.fn().mockResolvedValue(),
+}));
+
+import Tarefa from "../src/schemas/Tarefa.js";
+import { consultarTarefa } from "../src/handlers/handler.js";
 
 beforeAll(() => {
   jest.resetAllMocks();
 })
 
-jest.mock('../config/dbConnect.js', () => ({
-  conectarBancoDados: jest.fn().mockResolvedValue(),
-}));
 const spyFind = jest.spyOn(Tarefa, "findById");
 
 describe("Teste no consultarTarefa", ()=>{

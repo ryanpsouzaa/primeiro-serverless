@@ -47,9 +47,6 @@ functions:
       - http:
           path: /tarefas
           method: post
-          request:
-            schemas:
-              application/json: ${file(./schemas/postTarefa.json)}
 
   deleteTarefas:
     handler: handler.deletarTarefa
@@ -64,9 +61,6 @@ functions:
       - http:
           path: /tarefas/{id}
           method: put
-          request:
-            schemas:
-              application/json: ${file(./schemas/putTarefa.json)}
 
   tarefaFeita:
     handler: handler.tarefaRealizada

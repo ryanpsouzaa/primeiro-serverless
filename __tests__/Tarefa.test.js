@@ -1,4 +1,4 @@
-import Tarefa from "../schemas/Tarefa.js";
+import Tarefa from "../src/schemas/Tarefa.js";
 
 describe("Testes no Schema Tarefa", ()=>{
 

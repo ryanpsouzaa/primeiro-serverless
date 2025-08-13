@@ -1,16 +1,17 @@
-import { deletarTarefa } from "../handler.js";
-import Tarefa from "../schemas/Tarefa.js";
+import { jest } from "@jest/globals";
 
+jest.mock("../config/dbConnect.js", () => ({
+  conectarBancoDados: jest.fn().mockResolvedValue()
+}));
+
+import Tarefa from "../src/schemas/Tarefa.js";
+import { deletarTarefa } from "../src/handlers/handler.js";
 
 beforeEach(()=>{
   jest.resetAllMocks();
 });
 
 const spyFind = jest.spyOn(Tarefa, "findByIdAndDelete");
-
-jest.mock("../config/dbConnect.js", () => ({
-  conectarBancoDados: jest.fn().mockResolvedValue()
-}));
 
 describe("Teste deletarTarefa", ()=>{
   it("Deveria retornar 404 por Tarefa inexistente", async ()=>{

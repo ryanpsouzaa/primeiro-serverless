@@ -1,9 +1,17 @@
-import { atualizarTarefa } from "../handler.js";
-import Tarefa from "../schemas/Tarefa.js";
+import { jest } from "@jest/globals";
 
 jest.mock("../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
+
+import Tarefa from "../src/schemas/Tarefa.js";
+import { atualizarTarefa } from "../src/handlers/handler.js";
+
+beforeEach(() =>{
+  jest.resetAllMocks();
+});
+
+const spyFind = jest.spyOn(Tarefa, "findByIdAndUpdate");
 
 describe("Teste em atualizarTarefa", ()=> {
   it("Deveria retornar 422 por requisição sem body", async ()=> {
@@ -25,7 +33,7 @@ describe("Teste em atualizarTarefa", ()=> {
       pathParameters: {id: 1000}
     };
 
-    const spyFind = jest.spyOn(Tarefa, "findByIdAndUpdate").mockResolvedValue(null);
+    spyFind.mockResolvedValue(null);
 
     //ACT
     const response = await atualizarTarefa(event);
@@ -42,7 +50,7 @@ describe("Teste em atualizarTarefa", ()=> {
       pathParameters: {id: 1000}
     };
 
-    const spyFind = jest.spyOn(Tarefa, "findByIdAndUpdate").mockRejectedValue(new Error("ERRO - Mock"));
+    spyFind.mockRejectedValue(new Error("ERRO - Mock"));
 
     //ACT
     const response = await atualizarTarefa(event);
@@ -60,7 +68,7 @@ describe("Teste em atualizarTarefa", ()=> {
       pathParameters: {id: 1000}
     };
 
-    const spyFind = jest.spyOn(Tarefa, "findByIdAndUpdate").mockResolvedValue({
+    spyFind.mockResolvedValue({
       id: 1000,
       nome: "TESTE",
       descricao: descricaoAlterada,

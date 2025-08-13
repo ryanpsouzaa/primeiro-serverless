@@ -1,18 +1,22 @@
-import { getTarefas } from "../handler.js";
-import Tarefa from "../schemas/Tarefa.js";
-
-beforeEach(()=>{
-  jest.resetAllMocks();
-});
+import { jest } from "@jest/globals";
 
 jest.mock('../config/dbConnect', () => ({
   conectarBancoDados: jest.fn().mockResolvedValue(),
 }));
 
+import Tarefa from "../src/schemas/Tarefa.js";
+import { getTarefas } from "../src/handlers/handler.js";
+
+beforeEach(()=>{
+  jest.resetAllMocks();
+});
+
+const spyFind = jest.spyOn(Tarefa, "find");
+
 describe("Teste getTarefas", () =>{
   it("Deveria retornar todas as tarefas criadas", async () =>{
     //ARRANGE
-    const spyFind = jest.spyOn(Tarefa, "find").mockResolvedValue([
+    spyFind.mockResolvedValue([
       {nome:"TesteUm", descricao:"DescricaoUm", feito:false},
       {nome:"TesteDois", descricao:"DescricaoDois", feito:true}
     ]);
@@ -38,7 +42,7 @@ describe("Teste getTarefas", () =>{
 
   it("Deveria retornar lista vazia", async () =>{
     //ARRANGE
-    const spyFind = jest.spyOn(Tarefa, "find").mockResolvedValue([]);
+    spyFind.mockResolvedValue([]);
 
     const event = {};
 

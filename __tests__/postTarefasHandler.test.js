@@ -1,16 +1,17 @@
-import { postTarefas } from "../handler.js";
-import Tarefa from "../schemas/Tarefa.js";
 import {jest} from "@jest/globals";
+
+jest.mock("../config/dbConnect.js", () => ({
+  conectarBancoDados: jest.fn().mockResolvedValue()
+}));
+
+import Tarefa from "../src/schemas/Tarefa.js";
+import { postTarefas } from "../src/handlers/handler.js";
 
 beforeEach(()=>{
   jest.resetAllMocks();
 })
-const spyFind = jest.spyOn(Tarefa, "create");
 
-import conectarBancoDados from "../config/dbConnect.js";
-jest.mock("../config/dbConnect.js", () => ({
-  default: jest.fn().mockResolvedValue()
-}));
+const spyCreate = jest.spyOn(Tarefa, "create");
 
 describe("Teste postTarefas", ()=>{
   it("Deveria retornar 422 por body inexistente", async ()=>{
@@ -27,9 +28,7 @@ describe("Teste postTarefas", ()=>{
 
   it("Deveria retornar 500 por erro interno", async () =>{
     //ARRANGE
-    Tarefa.create.mockImplementation(() =>{
-      throw new Error("ERRO - Mock")
-    });
+    spyCreate.mockRejectedValue(new Error("ERRO - Mock"));
 
     const event = {body: JSON.stringify({ nome: "Teste"})}
 
@@ -49,7 +48,7 @@ describe("Teste postTarefas", ()=>{
       feito: false
     })}
 
-   Tarefa.create.mockResolvedValue({
+   spyCreate.mockResolvedValue({
       nome: "TESTE",
       descricao : "Descricao TESTE",
       feito: false}) 

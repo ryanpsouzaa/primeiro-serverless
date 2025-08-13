@@ -1,6 +1,5 @@
-import {conectarBancoDados} from "./config/dbConnect.js";
-import tarefa from "./schemas/Tarefa.js";
-import usuario from "./schemas/Usuario.js";
+import {conectarBancoDados} from "../../config/dbConnect.js";
+import tarefa from "../schemas/Tarefa.js";
 
 export async function getTarefas(event) {
   await conectarBancoDados();
