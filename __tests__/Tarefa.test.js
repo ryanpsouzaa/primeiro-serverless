@@ -1,5 +1,4 @@
-import Tarefa from "../src/schemas/Tarefa.js";
-
+const Tarefa = require("../src/schemas/Tarefa.js");
 describe("Testes no Schema Tarefa", ()=>{
 
   it("Deve lancar erro ao tentar validar dados incorretos (sem nome da tarefa)", async ()=>{

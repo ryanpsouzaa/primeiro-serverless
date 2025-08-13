@@ -1,11 +1,9 @@
-import { jest } from "@jest/globals";
+const Tarefa = require("../src/schemas/Tarefa.js");
+const consultarTarefa = require("../src/handlers/handler.js");
 
 jest.mock('../config/dbConnect.js', () => ({
   conectarBancoDados: jest.fn().mockResolvedValue(),
 }));
-
-import Tarefa from "../src/schemas/Tarefa.js";
-import { consultarTarefa } from "../src/handlers/handler.js";
 
 beforeAll(() => {
   jest.resetAllMocks();

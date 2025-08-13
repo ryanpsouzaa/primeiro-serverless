@@ -199,8 +199,9 @@ const config = {
 
 module.exports = {
   testEnvironment: "node",
-  transform: {},
+  transform: {}, // sem Babel por enquanto
+  extensionsToTreatAsEsm: [".js"],
   moduleNameMapper: {
-    "^(\\.{1,2}/.*)\\.js$": "$1"
+    "^(\\.{1,2}/.*)\\.js$": "$1" // mantém extensão nos imports
   }
 };

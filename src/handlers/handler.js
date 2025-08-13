@@ -1,16 +1,16 @@
-import {conectarBancoDados} from "../../config/dbConnect.js";
-import tarefa from "../schemas/Tarefa.js";
+const {conectarBancoDados} = require("../../config/dbConnect.js");
+const {tarefa} = require("../schemas/Tarefa.js");
 
-import Ajv from "ajv";
+const Ajv = require("ajv");
 
-import postSchema from "../validacao/postTarefa.json" assert {type: "json"};
-import putSchema from "../validacao/putTarefa.json" assert {type: "json"};
+const postSchema = require("../validacao/postTarefa.json");
+const putSchema = require("../validacao/putTarefa.json");
 
 const ajv = new Ajv();
 const validarDadosPost = ajv.compile(postSchema);
 const validarDadosPut = ajv.compile(putSchema);
 
-export async function getTarefas(event) {
+async function getTarefas(event) {
   await conectarBancoDados();
 
   const tarefas = await tarefa.find({});
@@ -26,7 +26,7 @@ export async function getTarefas(event) {
   }
 }
 
-export async function consultarTarefa(event){
+async function consultarTarefa(event){
   await conectarBancoDados();
 
   try{
@@ -53,7 +53,7 @@ export async function consultarTarefa(event){
   }
 }
 
-export async function tarefaRealizada(event){
+async function tarefaRealizada(event){
   const { id } = event.pathParameters;
   conectarBancoDados();
   try{
@@ -98,7 +98,7 @@ function extrairBody(event){
   return JSON.parse(event.body);
 }
 
-export async function postTarefas(event){
+async function postTarefas(event){
   const body = extrairBody(event);
 
   if(body?.statusCode){
@@ -134,14 +134,25 @@ export async function postTarefas(event){
     
   }else{
     console.log(validarDadosPost.errors);
+    const erros = validarDadosPost.errors;
+
+    const mensagemErro = erros.map(erro =>{
+      if(erro.keyword === "required"){
+        return `O campo ${erro.params.missingProperty} é obrigatório`
+      }
+
+      return erro.message;
+    });
+
+    console.log(mensagemErro);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({erro: mensagemErro})
+      }
     }
-    return{
-      statusCode: 422,
-      body: JSON.stringify({erro: "Dados inválidos"})
-    };
 } 
 
-export async function atualizarTarefa(event){
+async function atualizarTarefa(event){
   conectarBancoDados();
   const putBody = extrairBody(event);
   if(putBody?.statusCode){
@@ -177,7 +188,7 @@ export async function atualizarTarefa(event){
   }
 }
 
-export async function deletarTarefa(event){
+async function deletarTarefa(event){
   const { id } = event.pathParameters;
   conectarBancoDados();
   try{
@@ -202,12 +213,11 @@ export async function deletarTarefa(event){
   }
 }
 
-export default {
+module.exports = {
   getTarefas,
   consultarTarefa,
   postTarefas,
   deletarTarefa,
   atualizarTarefa,
   tarefaRealizada
-}
-
+};
