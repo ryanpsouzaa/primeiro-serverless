@@ -1,6 +1,15 @@
 import {conectarBancoDados} from "../../config/dbConnect.js";
 import tarefa from "../schemas/Tarefa.js";
 
+import Ajv from "ajv";
+
+import postSchema from "../validacao/postTarefa.json" assert {type: "json"};
+import putSchema from "../validacao/putTarefa.json" assert {type: "json"};
+
+const ajv = new Ajv();
+const validarDadosPost = ajv.compile(postSchema);
+const validarDadosPut = ajv.compile(putSchema);
+
 export async function getTarefas(event) {
   await conectarBancoDados();
 
@@ -95,29 +104,42 @@ export async function postTarefas(event){
   if(body?.statusCode){
     return body;
   }
+  const validacao = validarDadosPost(body);
+  if(validacao){
+    console.log(validacao);
+    console.log("entrou na validacao dos dados");
+    conectarBancoDados();
+    console.log("conectado BD");
 
-  await conectarBancoDados();
+    try{
+      await conectarBancoDados();
+      const tarefaCadastrada = await tarefa.create(body);
+      return{
+        statusCode: 201,
+        headers: {
+          "Content-Type" : "application/json"
+        },
+        body: JSON.stringify({
+          mensagem: "Tarefa cadastrada com sucesso",
+          tarefa: tarefaCadastrada
+        })
+      }
 
-  try{
-    const tarefaCadastrada = await tarefa.create(body);
-    return{
-      statusCode: 201,
-      headers: {
-        "Content-Type" : "application/json"
-      },
-      body: JSON.stringify({
-        mensagem: "Tarefa cadastrada com sucesso",
-        tarefa: tarefaCadastrada
-      })
+    }catch(erro){
+      return{
+        statusCode: 500,
+        body: JSON.stringify({erro: "Erro interno no servidor"})
+      }
     }
-
-  }catch(erro){
-    return{
-      statusCode: 500,
-      body: JSON.stringify({erro: "Erro interno no servidor"})
+    
+  }else{
+    console.log(validarDadosPost.errors);
     }
-  }
-}
+    return{
+      statusCode: 422,
+      body: JSON.stringify({erro: "Dados inválidos"})
+    };
+} 
 
 export async function atualizarTarefa(event){
   conectarBancoDados();
@@ -125,26 +147,32 @@ export async function atualizarTarefa(event){
   if(putBody?.statusCode){
     return putBody;
   }
-  const { id } = event.pathParameters;
+  if(validarDadosPut(putBody)){
+    const { id } = event.pathParameters;
+    try{
+      const putResultado = await tarefa.findByIdAndUpdate(id, putBody);
+      if(!putResultado){
+        return{
+          statusCode: 404,
+          body: JSON.stringify({erro: "Tarefa não encontrada"})
+        }
+      }
 
-  try{
-    const putResultado = await tarefa.findByIdAndUpdate(id, putBody);
-    if(!putResultado){
+      return {
+        statusCode: 200,
+        body: JSON.stringify(putResultado)
+      }
+
+    }catch (error){
       return{
-        statusCode: 404,
-        body: JSON.stringify({erro: "Tarefa não encontrada"})
+        statusCode: 500,
+        body: JSON.stringify({erro: "Erro interno no servidor"})
       }
     }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(putResultado)
-    }
-
-  }catch (error){
+  }else{
     return{
-      statusCode: 500,
-      body: JSON.stringify({erro: "Erro interno no servidor"})
+      statusCode: 400,
+      body: JSON.stringify({erro: "Dados invalidos"})
     }
   }
 }

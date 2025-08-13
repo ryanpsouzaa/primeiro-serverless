@@ -1,13 +1,9 @@
 {
   "type" : "object",
-
   "properties" : {
-    "descricao" : {
-      "type" : "string"
-    },
-
-    "feito" : {
-      "type" : "boolean"
-    }
-  }, "required" : ["descricao", "feito"]
+    "descricao" : {"type" : "string"}
+  },
+  "required" : ["descricao"],
+  "additionalProperties": false
+  
 }

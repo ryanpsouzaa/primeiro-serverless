@@ -27,7 +27,7 @@ provider:
 functions:
 
   getTarefas:
-    handler: handler.getTarefas
+    handler: src/handlers/handler.getTarefas
     timeout: 10
     events:
       - httpApi:
@@ -35,35 +35,35 @@ functions:
           method: get
 
   getTarefa:
-    handler: handler.consultarTarefa
+    handler: src/handlers/handler.consultarTarefa
     events:
       - httpApi:
           path: /tarefas/{id}
           method: get
 
   postTarefas:
-    handler: handler.postTarefas
+    handler: src/handlers/handler.postTarefas
     events:
       - http:
           path: /tarefas
           method: post
 
   deleteTarefas:
-    handler: handler.deletarTarefa
+    handler: src/handlers/handler.deletarTarefa
     events:
       - http:
           path: /tarefas/{id}
           method: delete
   
   putTarefas:
-    handler: handler.atualizarTarefa
+    handler: src/handlers/handler.atualizarTarefa
     events:
       - http:
           path: /tarefas/{id}
           method: put
 
   tarefaFeita:
-    handler: handler.tarefaRealizada
+    handler: src/handlers/handler.tarefaRealizada
     events:
       - httpApi:
           path: /tarefas/feito/{id}
