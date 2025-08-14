@@ -1,4 +1,4 @@
-const {tarefa} = require("../schemas/Tarefa.js");
+const Tarefa = require("../schemas/Tarefa.js");
 const {conectarBancoDados} = require("../../config/dbConnect.js");
 const Ajv = require("ajv");
 
@@ -13,7 +13,7 @@ async function listarTarefas(){
   try{
     await conectarBancoDados();
 
-    const tarefas = await tarefa.find({});
+    const tarefas = await Tarefa.find({});
     if(tarefas.length === 0){
       return {
         statusCode: 400,
@@ -38,7 +38,7 @@ async function consultarTarefa(id){
 
   try{
     await conectarBancoDados();
-    const tarefaEncontrada = await tarefa.findById(id);
+    const tarefaEncontrada = await Tarefa.findById(id);
 
     if(!tarefaEncontrada){
       return{
@@ -63,7 +63,7 @@ async function realizarTarefa(id){
   
   try{
     conectarBancoDados();
-    const tarefaEncontrada = await tarefa.findById(id);
+    const tarefaEncontrada = await Tarefa.findById(id);
 
     if(!tarefaEncontrada){
       return{
@@ -106,7 +106,7 @@ async function criarTarefa(dados){
       console.log(validacao);
       conectarBancoDados();
 
-      const tarefaCriada = await tarefa.create(dados);
+      const tarefaCriada = await Tarefa.create(dados);
       return{
         statusCode: 201,
         body: JSON.stringify({
@@ -147,17 +147,16 @@ async function atualizarTarefa(id, dados){
     const validacao = validarDadosPut(dados);
 
     if(validacao){
-      const tarefaAlterada = await tarefa.findByIdAndUpdate(id, dados);
-      return{
-        statusCode: 200,
-        body: JSON.stringify({mensagem: "Tarefa alterada com sucesso"})
-      }
-      
+      const tarefaAlterada = await Tarefa.findByIdAndUpdate(id, dados);
       if(!tarefaAlterada){
         return{
           statusCode: 404,
           body: JSON.stringify({erro: "Tarefa não encontrada"})
         }
+      }
+      return{
+        statusCode: 200,
+        body: JSON.stringify({mensagem: "Tarefa alterada com sucesso"})
       }
     }else{
       console.log(validarDadosPut.errors);
@@ -165,7 +164,7 @@ async function atualizarTarefa(id, dados){
 
       const mensagemErro = erros.map(erro =>{
         if(erro.keyword === "required"){
-          return `O campo ${erro.params.missingProperty}`
+          return `O campo ${erro.params.missingProperty} é obrigatório`
         }
 
         return erro.message;
@@ -187,7 +186,7 @@ async function atualizarTarefa(id, dados){
 async function excluirTarefa(id){
   try{
     conectarBancoDados();
-    const exclusaoResultado = await tarefa.findByIdAndDelete(id);
+    const exclusaoResultado = await Tarefa.findByIdAndDelete(id);
     if(!exclusaoResultado){
       return{
         statusCode: 404,

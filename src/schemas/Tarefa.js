@@ -8,6 +8,4 @@ const tarefaSchema = new mongoose.Schema( {
 
 }, {versionKey: false});
 
-const tarefa = mongoose.model("tarefas", tarefaSchema);
-
-module.exports = {tarefa};
+module.exports = mongoose.model("tarefas", tarefaSchema);

@@ -1,20 +1,16 @@
-const Tarefa = require("../src/schemas/Tarefa.js");
-const consultarTarefa = require("../src/handlers/handler.js");
+const { consultarTarefa } = require("../../src/services/tarefaService.js");
+const Tarefa = require("../../src/schemas/Tarefa.js");
 
-jest.mock('../config/dbConnect.js', () => ({
-  conectarBancoDados: jest.fn().mockResolvedValue(),
+jest.mock("../../config/dbConnect.js", () => ({
+  conectarBancoDados: jest.fn().mockResolvedValue()
 }));
-
-beforeAll(() => {
-  jest.resetAllMocks();
-})
 
 const spyFind = jest.spyOn(Tarefa, "findById");
 
-describe("Teste no consultarTarefa", ()=>{
-  it("Deveria retornar 404 ao consultar Tarefa inexistente", async ()=>{
+describe("Testes em consultarTarefa (GET)", () => {
+  it("Deveria retornar 404 ao consultar Tarefa inexistente", async () => {
     //ARRANGE
-    const event = {pathParameters: {id: 10000}};
+    const event = {id: 1000};
 
     spyFind.mockResolvedValue(null);
 
@@ -26,11 +22,11 @@ describe("Teste no consultarTarefa", ()=>{
     expect(response.body).toMatch(/Tarefa não encontrada/);
   });
 
-  it("Deveria retornar 400 ao dar falha para encontrar Tarefa", async ()=>{
+  it("Deveria retornar 500 por erro interno", async () => {
     //ARRANGE
     spyFind.mockRejectedValue(new Error("ERRO - Mock"));
 
-    const event = {pathParameters: {id: 10000}};
+    const event = { id: 10000 };
 
     //ACT
     const response = await consultarTarefa(event);
@@ -40,11 +36,11 @@ describe("Teste no consultarTarefa", ()=>{
     expect(response.body).toMatch(/Erro interno no servidor/);
   });
 
-  it("Deveria retornar 200 ao consultar Tarefa existente", async() =>{
+  it("Deveria retornar 200 ao consultar Tarefa existente", async () => {
     //ARRANGE
-    spyFind.mockResolvedValue({nome: "TarefaTeste", descricao: "Descricao TarefaTeste", feito: true});
+    spyFind.mockResolvedValue({ nome: "TarefaTeste", descricao: "Descricao TarefaTeste", feito: true });
 
-    const event = {pathParameters: {id: 100}}
+    const event = { id: 100 };
 
     //ACT
     const response = await consultarTarefa(event);
