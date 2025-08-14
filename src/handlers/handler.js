@@ -1,90 +1,40 @@
-const {conectarBancoDados} = require("../../config/dbConnect.js");
-const {tarefa} = require("../schemas/Tarefa.js");
+//services
+const {
+  listarTarefas, consultarTarefa, criarTarefa,
+  atualizarTarefa, realizarTarefa, excluirTarefa
+} = require("../services/tarefaService.js");
 
-const Ajv = require("ajv");
-
-const postSchema = require("../validacao/postTarefa.json");
-const putSchema = require("../validacao/putTarefa.json");
-
-const ajv = new Ajv();
-const validarDadosPost = ajv.compile(postSchema);
-const validarDadosPut = ajv.compile(putSchema);
 
 async function getTarefas(event) {
-  await conectarBancoDados();
-
-  const tarefas = await tarefa.find({});
-  if(tarefas.length === 0){
-    return {
-      statusCode: 400,
-      body: JSON.stringify({erro: "Não há tarefas cadastradas no momento."})
-    }
-  }
-  return {
-    statusCode: 200,
-    body: JSON.stringify(tarefas)
-  }
+  const response = await listarTarefas();
+  return response;
 }
 
-async function consultarTarefa(event){
-  await conectarBancoDados();
-
-  try{
-    const { id } = event.pathParameters;
-    const tarefaEncontrada = await tarefa.findById(id);
-
-    if(!tarefaEncontrada){
-      return{
-        statusCode: 404,
-        body: JSON.stringify({erro: "Tarefa não encontrada"})
-      }
-    }
-
+async function getOneTarefa(event){
+  const {id} = event.pathParameters;
+  if(!id){
     return{
-      statusCode: 200,
-      body: JSON.stringify(tarefaEncontrada)
+      statusCode: 422,
+      body: JSON.stringify({erro: "É obrigatório o fornecimento do Id"})
     }
 
-  }catch(error){
-    return{
-      statusCode: 500,
-      body: JSON.stringify({erro: "Erro interno no servidor"})
-    }
+  }else{
+    const response = await consultarTarefa(id);
+    return response;
   }
 }
 
 async function tarefaRealizada(event){
-  const { id } = event.pathParameters;
-  conectarBancoDados();
-  try{
-    const tarefaRealizada = await tarefa.findById(id);
-    if(!tarefaRealizada){
-      return{
-        statusCode: 404,
-        body: JSON.stringify({erro: "Tarefa não encontrada"})
-      }
+  const {id} = event.pathParameters;
+  if(!id){
+    return{
+      statusCode: 422,
+      body: JSON.stringify({erro: "É obrigatório o fornecimento do Id"})
     }
 
-    if(tarefaRealizada.feito){
-      return {
-        statusCode: 400,
-        body: JSON.stringify({erro: "Tarefa já está realizada"})
-      }
-    }
-    tarefaRealizada.feito = true;
-    await tarefaRealizada.save();
-    return{
-      statusCode: 200,
-      body: JSON.stringify({
-        mensagem: "Tarefa realizada!",
-        tarefa: tarefaRealizada
-      })
-    }
-  } catch(erro){
-    return{
-      statusCode: 500,
-      body: JSON.stringify({erro: "Erro interno no servidor"})
-    }
+  }else{
+    const response = await consultarTarefa(id);
+    return response;
   }
 }
 
@@ -100,117 +50,44 @@ function extrairBody(event){
 
 async function postTarefas(event){
   const body = extrairBody(event);
-
   if(body?.statusCode){
+    //body com statusCode 422
     return body;
   }
-  const validacao = validarDadosPost(body);
-  if(validacao){
-    console.log(validacao);
-    console.log("entrou na validacao dos dados");
-    conectarBancoDados();
-    console.log("conectado BD");
-
-    try{
-      await conectarBancoDados();
-      const tarefaCadastrada = await tarefa.create(body);
-      return{
-        statusCode: 201,
-        headers: {
-          "Content-Type" : "application/json"
-        },
-        body: JSON.stringify({
-          mensagem: "Tarefa cadastrada com sucesso",
-          tarefa: tarefaCadastrada
-        })
-      }
-
-    }catch(erro){
-      return{
-        statusCode: 500,
-        body: JSON.stringify({erro: "Erro interno no servidor"})
-      }
-    }
-    
-  }else{
-    console.log(validarDadosPost.errors);
-    const erros = validarDadosPost.errors;
-
-    const mensagemErro = erros.map(erro =>{
-      if(erro.keyword === "required"){
-        return `O campo ${erro.params.missingProperty} é obrigatório`
-      }
-
-      return erro.message;
-    });
-
-    console.log(mensagemErro);
-    return {
-      statusCode: 400,
-      body: JSON.stringify({erro: mensagemErro})
-      }
-    }
+  const response = await criarTarefa(body);
+  return response
 } 
 
-async function atualizarTarefa(event){
-  conectarBancoDados();
-  const putBody = extrairBody(event);
-  if(putBody?.statusCode){
-    return putBody;
-  }
-  if(validarDadosPut(putBody)){
-    const { id } = event.pathParameters;
-    try{
-      const putResultado = await tarefa.findByIdAndUpdate(id, putBody);
-      if(!putResultado){
-        return{
-          statusCode: 404,
-          body: JSON.stringify({erro: "Tarefa não encontrada"})
-        }
-      }
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify(putResultado)
-      }
-
-    }catch (error){
-      return{
-        statusCode: 500,
-        body: JSON.stringify({erro: "Erro interno no servidor"})
-      }
-    }
-  }else{
+async function putTarefa(event){
+  const {id} = event.pathParameters;
+  if(!id){
     return{
-      statusCode: 400,
-      body: JSON.stringify({erro: "Dados invalidos"})
+      statusCode: 422,
+      body: JSON.stringify({erro: "É obrigatório o fornecimento do Id"})
     }
   }
+
+  const body = extrairBody(event);
+  if(body?.statusCode){
+    //body com statusCode 422
+    return body;
+  }
+
+  const response = await atualizarTarefa(id, body);
+  return response;
 }
 
-async function deletarTarefa(event){
-  const { id } = event.pathParameters;
-  conectarBancoDados();
-  try{
-    const deleteResultado = await tarefa.findByIdAndDelete(id);
-    if(!deleteResultado){
-      return{
-        statusCode: 404,
-        body: JSON.stringify({erro: "Tarefa não encontrada"})
-      }
-    }
-
+async function deleteTarefa(event){
+  const {id} = event.pathParameters;
+  if(!id){
     return{
-      statusCode: 200,
-      body: JSON.stringify({message: "Tarefa excluída com sucesso"})
-    }
-
-  } catch(error){
-    return {
-      statusCode: 500,
-      body: JSON.stringify({erro: "Erro interno no servidor"})
+      statusCode: 422,
+      body: JSON.stringify({erro: "É obrigatório o fornecimento do Id"})
     }
   }
+
+  const response = await excluirTarefa(id);
+  return response;
 }
 
 module.exports = {

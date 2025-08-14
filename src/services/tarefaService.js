@@ -184,10 +184,33 @@ async function atualizarTarefa(id, dados){
   }
 }
 
+async function excluirTarefa(id){
+  try{
+    conectarBancoDados();
+    const exclusaoResultado = Tarefa.findByIdAndDelete(id);
+    if(!exclusaoResultado){
+      return{
+        statusCode: 404,
+        body: JSON.stringify({erro: "Tarefa não encontrada"})
+      }
+    }
+    return{
+      statusCode: 200,
+      body: JSON.stringify({message: "Tarefa excluída com sucesso"})
+    }
+  }catch(erro){
+    return{
+      statusCode: 500,
+      body: JSON.stringify({erro: `Erro interno no servidor: ${erro.message}`})
+    }
+  }
+}
+
 module.exports = {
   listarTarefas,
   consultarTarefa,
   criarTarefa,
   atualizarTarefa,
-  realizarTarefa
+  realizarTarefa,
+  excluirTarefa
 }
