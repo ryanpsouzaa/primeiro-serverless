@@ -1,6 +1,10 @@
 const { criarTarefa } = require("../../src/services/tarefaService");
 const Tarefa = require("../../src/schemas/Tarefa.js");
 
+beforeEach(() =>{
+  jest.resetAllMocks();
+});
+
 jest.mock("../../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
@@ -35,6 +39,7 @@ describe("Testes em criarTarefa (POST)", () => {
     const response = await criarTarefa(event);
 
     //ASSERT
+    expect(spyCreate).toHaveReturned();
     expect(response.statusCode).toBe(500);
     expect(response.body).toMatch(/Erro interno no servidor/);
   });
@@ -58,6 +63,11 @@ describe("Testes em criarTarefa (POST)", () => {
 
     //ASSERT
     const bodyResponse = JSON.parse(response.body);
+
+    expect(spyCreate).toHaveReturned();
+    expect(spyCreate).toHaveBeenCalledTimes(1);
+    expect(spyCreate).toHaveBeenCalledWith(event);
+
     expect(response.statusCode).toBe(201);
     expect(bodyResponse.mensagem).toMatch(/Tarefa criada com sucesso/);
 
@@ -65,4 +75,4 @@ describe("Testes em criarTarefa (POST)", () => {
     expect(bodyResponse.tarefa.descricao).toBe("Descricao TESTE");
     expect(bodyResponse.tarefa.feito).toBeFalsy();
   });
-})
+});

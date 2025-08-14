@@ -1,5 +1,7 @@
 const { atualizarTarefa } = require("../../src/services/tarefaService.js");
 const Tarefa = require("../../src/schemas/Tarefa.js");
+const TarefaError = require("../../src/exceptions/TarefaError.js");
+const TarefaNaoEncontrada = require("../../src/exceptions/TarefaNaoEncontradaError.js");
 
 jest.mock("../../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
@@ -21,19 +23,15 @@ describe("Testes no atualizarTarefa (PUT)", () => {
     expect(response.body).toMatch(/O campo descricao é obrigatório/);
   });
 
-  it("Deveria retornar 404 por consultar Tarefa inexistente", async () => {
+  it("Deveria lancar TarefaNaoEncontrada por consultar Tarefa inexistente", async () => {
     //ARRANGE
     const eventId = {id: 1000};
     const eventDados = {descricao: "Descricao TESTE"};
 
     spyUpdate.mockResolvedValue(null);
 
-    //ACT
-    const response = await atualizarTarefa(eventId, eventDados);
-
-    //ASSERT
-    expect(response.statusCode).toBe(404);
-    expect(response.body).toMatch(/Tarefa não encontrada/);
+    //ACT + ASSERT
+    await expect(atualizarTarefa(eventId, eventDados)).reject.toThrow("Tarefa não encontrada")
   });
 
   it("Deveria retornar 500 por erro interno", async () => {

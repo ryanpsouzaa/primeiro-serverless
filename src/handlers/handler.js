@@ -4,10 +4,21 @@ const {
   atualizarTarefa, realizarTarefa, excluirTarefa
 } = require("../services/tarefaService.js");
 
-
 async function getTarefas(event) {
-  const response = await listarTarefas();
-  return response;
+  try{
+    const response = await listarTarefas();
+
+    return{
+      statusCode: 200,
+      body: JSON.stringify(response)
+    };
+
+  }catch(erro){
+    return{
+      statusCode: erro.statusCode,
+      body: JSON.stringify({erro: erro.message})
+    }
+  }
 }
 
 async function getOneTarefa(event){
@@ -17,10 +28,20 @@ async function getOneTarefa(event){
       statusCode: 422,
       body: JSON.stringify({erro: "É obrigatório o fornecimento do Id"})
     }
-
   }else{
-    const response = await consultarTarefa(id);
-    return response;
+    try{
+      const response = await consultarTarefa(id);
+      return{
+        statusCode: 200,
+        body: JSON.stringify(response)
+      }
+
+    }catch(erro){
+      return{
+        statusCode: erro.statusCode,
+        body: JSON.stringify({erro: erro.message})
+      }
+    }
   }
 }
 
@@ -33,8 +54,22 @@ async function tarefaRealizada(event){
     }
 
   }else{
-    const response = await realizarTarefa(id);
-    return response;
+    try{
+      const response = await realizarTarefa(id);
+      return{
+        statusCode: 200,
+        body: JSON.stringify({
+          message: "Tarefa realizada com sucesso!",
+          tarefa: response
+        })
+      }
+
+    }catch(erro){
+      return{
+        statusCode: erro.statusCode,
+        body: JSON.stringify({erro: erro.message})
+      }
+    }
   }
 }
 
@@ -54,8 +89,22 @@ async function postTarefas(event){
     //body com statusCode 422
     return body;
   }
-  const response = await criarTarefa(body);
-  return response
+  try{
+    const response = await criarTarefa(body);
+    return{
+      statusCode: 201,
+      body: JSON.stringify({
+        mensagem: "Tarefa criada com sucesso",
+        tarefa: response
+      })
+    }
+
+  }catch(erro){
+    return{
+      statusCode: erro.statusCode,
+      body: JSON.stringify({erro: erro.message})
+    }
+  }
 } 
 
 async function putTarefa(event){
@@ -73,8 +122,22 @@ async function putTarefa(event){
     return body;
   }
 
-  const response = await atualizarTarefa(id, body);
-  return response;
+  try{
+    const response = await atualizarTarefa(id, body);
+    return{
+      statusCode: 200,
+      body: JSON.stringify({
+        mensagem: "Tarefa atualizada com sucesso",
+        tarefa: response
+      })
+    };
+
+  }catch(erro){
+    return{
+      statusCode: erro.statusCode,
+      body: JSON.stringify({erro: erro.message})
+    }
+  }
 }
 
 async function deleteTarefa(event){
@@ -85,9 +148,22 @@ async function deleteTarefa(event){
       body: JSON.stringify({erro: "É obrigatório o fornecimento do Id"})
     }
   }
+  try{
+    const response = await excluirTarefa(id);
+    return{
+      statusCode: 200,
+      body: JSON.stringify({
+        mensagem: "Tarefa excluída com sucesso",
+        tarefa: response
+      })
+    }
 
-  const response = await excluirTarefa(id);
-  return response;
+  }catch(erro){
+    return{
+      statusCode: erro.statusCode,
+      body: JSON.stringify({erro: erro.message})
+    }
+  }
 }
 
 module.exports = {

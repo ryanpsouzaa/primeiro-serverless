@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.26% </span>
+                <span class="strong">97.05% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>71/73</span>
+                <span class='fraction'>66/68</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.26% </span>
+                <span class="strong">97.05% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>71/73</span>
+                <span class='fraction'>66/68</span>
             </div>
         
             
@@ -271,21 +271,7 @@
 <a name='L206'></a><a href='#L206'>206</a>
 <a name='L207'></a><a href='#L207'>207</a>
 <a name='L208'></a><a href='#L208'>208</a>
-<a name='L209'></a><a href='#L209'>209</a>
-<a name='L210'></a><a href='#L210'>210</a>
-<a name='L211'></a><a href='#L211'>211</a>
-<a name='L212'></a><a href='#L212'>212</a>
-<a name='L213'></a><a href='#L213'>213</a>
-<a name='L214'></a><a href='#L214'>214</a>
-<a name='L215'></a><a href='#L215'>215</a>
-<a name='L216'></a><a href='#L216'>216</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<a name='L209'></a><a href='#L209'>209</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -495,14 +481,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const Tarefa = require("../schemas/Tarefa.js");
 const {conectarBancoDados} = require("../../config/dbConnect.js");
-const Ajv = require("ajv");
-&nbsp;
-const postSchema = require("../validacao/postTarefa.json");
-const putSchema = require("../validacao/putTarefa.json"); 
-&nbsp;
-const ajv = new Ajv();
-const validarDadosPost = ajv.compile(postSchema);
-const validarDadosPut = ajv.compile(putSchema);
+const {validadorDadosPost, validadorDadosPut} = require("../validacao/validadorTarefa.js");
 &nbsp;
 async function listarTarefas(){
   try{
@@ -557,7 +536,7 @@ async function consultarTarefa(id){
 async function realizarTarefa(id){
   
   try{
-    conectarBancoDados();
+    await conectarBancoDados();
     const tarefaEncontrada = await Tarefa.findById(id);
 &nbsp;
     if(!tarefaEncontrada){
@@ -596,10 +575,10 @@ async function realizarTarefa(id){
 &nbsp;
 async function criarTarefa(dados){
   try{
-    const validacao = validarDadosPost(dados);
+    const validacao = validadorDadosPost(dados);
     if(validacao){
       console.log(validacao);
-      conectarBancoDados();
+      await conectarBancoDados();
 &nbsp;
       const tarefaCriada = await Tarefa.create(dados);
       return{
@@ -611,8 +590,8 @@ async function criarTarefa(dados){
       }
       
     }else{
-      console.log(validarDadosPost.errors);
-      const erros = validarDadosPost.errors;
+      console.log(validadorDadosPost.errors);
+      const erros = validadorDadosPost.errors;
 &nbsp;
       const mensagemErro = erros.map(erro =&gt;{
         <span class="missing-if-branch" title="else path not taken" >E</span>if(erro.keyword === "required"){
@@ -638,8 +617,8 @@ async function criarTarefa(dados){
 &nbsp;
 async function atualizarTarefa(id, dados){
   try{
-    conectarBancoDados();
-    const validacao = validarDadosPut(dados);
+    await conectarBancoDados();
+    const validacao = validadorDadosPut(dados);
 &nbsp;
     if(validacao){
       const tarefaAlterada = await Tarefa.findByIdAndUpdate(id, dados);
@@ -654,8 +633,8 @@ async function atualizarTarefa(id, dados){
         body: JSON.stringify({mensagem: "Tarefa alterada com sucesso"})
       }
     }else{
-      console.log(validarDadosPut.errors);
-      const erros = validarDadosPut.errors;
+      console.log(validadorDadosPut.errors);
+      const erros = validadorDadosPut.errors;
 &nbsp;
       const mensagemErro = erros.map(erro =&gt;{
         <span class="missing-if-branch" title="else path not taken" >E</span>if(erro.keyword === "required"){
@@ -680,7 +659,7 @@ async function atualizarTarefa(id, dados){
 &nbsp;
 async function excluirTarefa(id){
   try{
-    conectarBancoDados();
+    await conectarBancoDados();
     const exclusaoResultado = await Tarefa.findByIdAndDelete(id);
     if(!exclusaoResultado){
       return{
@@ -715,7 +694,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-14T17:48:41.602Z
+                at 2025-08-14T18:29:13.075Z
             </div>
         <script src="../prettify.js"></script>
         <script>
