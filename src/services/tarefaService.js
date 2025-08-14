@@ -1,4 +1,4 @@
-const {Tarefa} = require("../schemas/Tarefa.js");
+const {tarefa} = require("../schemas/Tarefa.js");
 const {conectarBancoDados} = require("../../config/dbConnect.js");
 const Ajv = require("ajv");
 
@@ -13,7 +13,7 @@ async function listarTarefas(){
   try{
     await conectarBancoDados();
 
-    const tarefas = await Tarefa.find({});
+    const tarefas = await tarefa.find({});
     if(tarefas.length === 0){
       return {
         statusCode: 400,
@@ -38,7 +38,7 @@ async function consultarTarefa(id){
 
   try{
     await conectarBancoDados();
-    const tarefaEncontrada = await Tarefa.findById(id);
+    const tarefaEncontrada = await tarefa.findById(id);
 
     if(!tarefaEncontrada){
       return{
@@ -63,32 +63,32 @@ async function realizarTarefa(id){
   
   try{
     conectarBancoDados();
-    const tarefa = await Tarefa.findById(id);
+    const tarefaEncontrada = await tarefa.findById(id);
 
-    if(!tarefa){
+    if(!tarefaEncontrada){
       return{
         statusCode: 404,
         body: JSON.stringify({erro: "Tarefa não encontrada"})
       }
     }
 
-    if(tarefa.feito){
+    if(tarefaEncontrada.feito){
       return{
         statusCode: 400,
         body: JSON.stringify({
           erro: "Tarefa já está feita",
-          tarefa: tarefa
+          tarefa: tarefaEncontrada
         })
       }
     }
 
-    tarefa.feito = true;
-    await tarefa.save();
+    tarefaEncontrada.feito = true;
+    await tarefaEncontrada.save();
     return{
       statusCode: 200,
       body: JSON.stringify({
         mensagem: "Tarefa Realizada!",
-        tarefa: tarefa
+        tarefa: tarefaEncontrada
       })
     }
   }catch (erro){
@@ -106,7 +106,7 @@ async function criarTarefa(dados){
       console.log(validacao);
       conectarBancoDados();
 
-      const tarefaCriada = await Tarefa.create(dados);
+      const tarefaCriada = await tarefa.create(dados);
       return{
         statusCode: 201,
         body: JSON.stringify({
@@ -147,7 +147,7 @@ async function atualizarTarefa(id, dados){
     const validacao = validarDadosPut(dados);
 
     if(validacao){
-      const tarefaAlterada = await Tarefa.findByIdAndUpdate(id, dados);
+      const tarefaAlterada = await tarefa.findByIdAndUpdate(id, dados);
       return{
         statusCode: 200,
         body: JSON.stringify({mensagem: "Tarefa alterada com sucesso"})
@@ -187,7 +187,7 @@ async function atualizarTarefa(id, dados){
 async function excluirTarefa(id){
   try{
     conectarBancoDados();
-    const exclusaoResultado = Tarefa.findByIdAndDelete(id);
+    const exclusaoResultado = await tarefa.findByIdAndDelete(id);
     if(!exclusaoResultado){
       return{
         statusCode: 404,

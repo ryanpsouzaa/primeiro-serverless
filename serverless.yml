@@ -35,7 +35,7 @@ functions:
           method: get
 
   getTarefa:
-    handler: src/handlers/handler.consultarTarefa
+    handler: src/handlers/handler.getOneTarefa
     events:
       - httpApi:
           path: /tarefas/{id}
@@ -49,14 +49,14 @@ functions:
           method: post
 
   deleteTarefas:
-    handler: src/handlers/handler.deletarTarefa
+    handler: src/handlers/handler.deleteTarefa
     events:
       - http:
           path: /tarefas/{id}
           method: delete
   
   putTarefas:
-    handler: src/handlers/handler.atualizarTarefa
+    handler: src/handlers/handler.putTarefa
     events:
       - http:
           path: /tarefas/{id}

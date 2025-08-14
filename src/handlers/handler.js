@@ -33,7 +33,7 @@ async function tarefaRealizada(event){
     }
 
   }else{
-    const response = await consultarTarefa(id);
+    const response = await realizarTarefa(id);
     return response;
   }
 }
@@ -92,9 +92,9 @@ async function deleteTarefa(event){
 
 module.exports = {
   getTarefas,
-  consultarTarefa,
+  getOneTarefa,
   postTarefas,
-  deletarTarefa,
-  atualizarTarefa,
+  deleteTarefa,
+  putTarefa,
   tarefaRealizada
 };
