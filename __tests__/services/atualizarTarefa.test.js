@@ -3,6 +3,10 @@ const Tarefa = require("../../src/schemas/Tarefa.js");
 const TarefaError = require("../../src/exceptions/TarefaError.js");
 const TarefaNaoEncontrada = require("../../src/exceptions/TarefaNaoEncontradaError.js");
 
+beforeEach(()=>{
+  jest.resetAllMocks();
+})
+
 jest.mock("../../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
@@ -10,17 +14,16 @@ jest.mock("../../config/dbConnect.js", () => ({
 const spyUpdate = jest.spyOn(Tarefa, "findByIdAndUpdate");
 
 describe("Testes no atualizarTarefa (PUT)", () => {
-  it("Deveria retornar 400 por dados incorretos", async () => {
+  it("Deveria lancar ValidacaoError por dados incorretos", async () => {
     //ARRANGE
     const eventId = {id: 1000};
     const eventDados = {nome: "TESTE"};
 
-    //ACT
-    const response = await atualizarTarefa(eventId, eventDados);
+    //ACT + ASSERT
+    await expect(atualizarTarefa(eventId, eventDados)).rejects
+      .toThrow("O campo descricao é obrigatório");
 
-    //ASSERT
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toMatch(/O campo descricao é obrigatório/);
+    expect(spyUpdate).not.toHaveBeenCalledWith();
   });
 
   it("Deveria lancar TarefaNaoEncontrada por consultar Tarefa inexistente", async () => {
@@ -31,25 +34,28 @@ describe("Testes no atualizarTarefa (PUT)", () => {
     spyUpdate.mockResolvedValue(null);
 
     //ACT + ASSERT
-    await expect(atualizarTarefa(eventId, eventDados)).reject.toThrow("Tarefa não encontrada")
+    await expect(atualizarTarefa(eventId, eventDados)).rejects
+      .toThrow("Tarefa não encontrada");
+
+    expect(spyUpdate).toHaveBeenCalledWith(eventId, eventDados);
+    expect(spyUpdate).toHaveBeenCalledTimes(1);
   });
 
-  it("Deveria retornar 500 por erro interno", async () => {
+  it("Deveria retornar TarefaError por erro interno", async () => {
     //ARRANGE
     const eventId = {id: 1000};
     const eventDados = {descricao: "Descricao TESTE"};
 
     spyUpdate.mockRejectedValue(new Error("ERRO - Mock"));
 
-    //ACT
-    const response = await atualizarTarefa(eventId, eventDados);
+    //ACT + ASSERT
+    await expect(atualizarTarefa(eventId, eventDados)).rejects
+      .toThrow("Erro interno no servidor");
 
-    //ASSERT
-    expect(response.statusCode).toBe(500);
-    expect(response.body).toMatch(/Erro interno no servidor/);
+    expect(spyUpdate).toHaveBeenCalledWith(eventId, eventDados);
   });
 
-  it("Deveria retornar 200 por alterar Tarefa com sucesso", async () => {
+  it("Deveria retornar TarefaAlterada por alterar Tarefa com sucesso", async () => {
     //ARRANGE
     const descricaoAlterada = "Descricao Alterada";
     const eventId = {id: 1000};
@@ -66,7 +72,11 @@ describe("Testes no atualizarTarefa (PUT)", () => {
     const response = await atualizarTarefa(eventId, eventDados);
 
     //ASSERT
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toMatch(/Tarefa alterada com sucesso/);
+    expect(spyUpdate).toHaveBeenCalledTimes(1);
+    expect(spyUpdate).toHaveBeenCalledWith(eventId, eventDados);
+
+    expect(response.nome).toBe("TESTE");
+    expect(response.descricao).toBe(eventDados.descricao);
+    expect(response.feito).toBeFalsy();
   });
 });

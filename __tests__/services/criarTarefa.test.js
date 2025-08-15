@@ -12,21 +12,19 @@ jest.mock("../../config/dbConnect.js", () => ({
 const spyCreate = jest.spyOn(Tarefa, "create");
 
 describe("Testes em criarTarefa (POST)", () => {
-  it("Deveria retornar 400 por dados incorretos", async () => {
+  it("Deveria retornar ValidacaoError por dados incorretos", async () => {
     //ARRANGE
     const event = {nome: "TESTE"};
 
-    //ACT
-    const response = await criarTarefa(event);
+    //ACT + ASSERT
+    await expect(criarTarefa(event)).rejects
+      .toThrow("O campo descricao é obrigatório");
 
-    //ASSERT
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toMatch(/O campo descricao é obrigatório/);
+    expect(spyCreate).not.toHaveBeenCalled();
   });
 
-  it("Deveria retornar 500 por erro interno", async () => {
+  it("Deveria retornar TarefaError por erro interno", async () => {
     //ARRANGE
-    //jest.spyOn(DB, "conectarBancoDados").mockResolvedValueOnce({});
     spyCreate.mockRejectedValue(new Error("ERRO - Mock"));
 
     const event = {
@@ -35,16 +33,14 @@ describe("Testes em criarTarefa (POST)", () => {
       feito: false    
     }
       
-    //ACT
-    const response = await criarTarefa(event);
+    //ACT + ASSERT
+    await expect(criarTarefa(event)).rejects
+      .toThrow("Erro interno no servidor");
 
-    //ASSERT
-    expect(spyCreate).toHaveReturned();
-    expect(response.statusCode).toBe(500);
-    expect(response.body).toMatch(/Erro interno no servidor/);
+    expect(spyCreate).toHaveBeenCalledWith(event);
   });
 
-  it("Deveria retornar 201 ao criar Tarefa corretamente", async () => {
+  it("Deveria retornar tarefaCriada ao criar Tarefa corretamente", async () => {
     //ARRANGE
     const event = {
       nome: "TESTE",
@@ -62,17 +58,12 @@ describe("Testes em criarTarefa (POST)", () => {
     const response = await criarTarefa(event);
 
     //ASSERT
-    const bodyResponse = JSON.parse(response.body);
 
-    expect(spyCreate).toHaveReturned();
     expect(spyCreate).toHaveBeenCalledTimes(1);
     expect(spyCreate).toHaveBeenCalledWith(event);
 
-    expect(response.statusCode).toBe(201);
-    expect(bodyResponse.mensagem).toMatch(/Tarefa criada com sucesso/);
-
-    expect(bodyResponse.tarefa.nome).toBe("TESTE");
-    expect(bodyResponse.tarefa.descricao).toBe("Descricao TESTE");
-    expect(bodyResponse.tarefa.feito).toBeFalsy();
+    expect(response.nome).toBe("TESTE");
+    expect(response.descricao).toBe("Descricao TESTE");
+    expect(response.feito).toBeFalsy();
   });
 });

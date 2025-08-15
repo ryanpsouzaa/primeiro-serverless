@@ -1,3 +1,5 @@
+const TarefaError = require("../exceptions/TarefaError.js");
+
 class TarefaJaFeita extends TarefaError{
   constructor(message = "Tarefa já está feita"){
     super(message, 400);

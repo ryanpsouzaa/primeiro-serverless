@@ -1,6 +1,10 @@
 const {listarTarefas} = require("../../src/services/tarefaService.js");
 const Tarefa = require("../../src/schemas/Tarefa.js");
 
+beforeEach(()=>{
+  jest.resetAllMocks()
+});
+
 jest.mock("../../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
@@ -9,7 +13,7 @@ const spyFind = jest.spyOn(Tarefa, "find");
 
 describe("Testes em listarTarefas (GET)", () => {
 
-  it("Deveria retornar todas as tarefas criadas", async () => {
+  it("Deveria retornar Tarefas cadastradas", async () => {
     //ARRANGE
     spyFind.mockResolvedValue([
       { nome: "TesteUm", descricao: "DescricaoUm", feito: false },
@@ -22,11 +26,11 @@ describe("Testes em listarTarefas (GET)", () => {
     const response = await listarTarefas(event);
 
     //ASSERT
-    const body = JSON.parse(response.body);
-    const tarefaUm = body[0];
-    const tarefaDois = body[1];
+    expect(spyFind).toHaveBeenCalledWith(event);
+    expect(spyFind).toHaveBeenCalledTimes(1);
 
-    expect(response.statusCode).toBe(200);
+    const tarefaUm = response[0];
+    const tarefaDois = response[1];
 
     expect(tarefaUm.nome).toBe("TesteUm");
     expect(tarefaDois.nome).toBe("TesteDois");
@@ -35,30 +39,30 @@ describe("Testes em listarTarefas (GET)", () => {
     expect(tarefaDois.feito).toBeTruthy();
   });
 
-  it("Deveria retornar lista vazia", async () => {
+  it("Deveria lancar TarefaNaoEncontrada por lista vazia", async () => {
     //ARRANGE
     spyFind.mockResolvedValue([]);
 
     const event = {};
 
     //ACT
-    const response = await listarTarefas(event);
+    await expect(listarTarefas(event)).rejects
+      .toThrow("Não há tarefas cadastradas");
 
-    //ASSERT
-    expect(response.statusCode).toBe(400);
+    expect(spyFind).toHaveBeenCalledWith(event);
+    expect(spyFind).toHaveBeenCalledTimes(1);
   });
 
-  it("Deveria retornar 500 por erro interno", async ()=>{
+  it("Deveria retornar TarefaError por erro interno", async ()=>{
     //ARRANGE
     const event ={};
 
     spyFind.mockRejectedValue(new Error("ERRO - Mock"));
 
-    //ACT
-    const response = await listarTarefas(event);
+    //ACT + ASSERT
+    await expect(listarTarefas(event)).rejects
+      .toThrow("Erro interno no servidor");
 
-    //ASSERT
-    expect(response.statusCode).toBe(500);
-    expect(response.body).toMatch(/Erro interno no servidor/);
+    expect(spyFind).toHaveBeenCalledWith(event);
   })
 })

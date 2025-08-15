@@ -1,6 +1,10 @@
 const { consultarTarefa } = require("../../src/services/tarefaService.js");
 const Tarefa = require("../../src/schemas/Tarefa.js");
 
+beforeEach(() =>{
+  jest.resetAllMocks()
+});
+
 jest.mock("../../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
@@ -8,35 +12,35 @@ jest.mock("../../config/dbConnect.js", () => ({
 const spyFind = jest.spyOn(Tarefa, "findById");
 
 describe("Testes em consultarTarefa (GET)", () => {
-  it("Deveria retornar 404 ao consultar Tarefa inexistente", async () => {
+  it("Deveria retornar TarefaNaoEncontradaError ao consultar Tarefa inexistente", async () => {
     //ARRANGE
     const event = {id: 1000};
 
     spyFind.mockResolvedValue(null);
 
-    //ACT
-    const response = await consultarTarefa(event);
+    //ACT + ASSERT
+    await expect(consultarTarefa(event)).rejects
+      .toThrow("Tarefa não encontrada");
 
-    //ASSERT
-    expect(response.statusCode).toBe(404);
-    expect(response.body).toMatch(/Tarefa não encontrada/);
+    expect(spyFind).toHaveBeenCalledWith(event);
+    expect(spyFind).toHaveBeenCalledTimes(1);
   });
 
-  it("Deveria retornar 500 por erro interno", async () => {
+  it("Deveria lancar TarefaError por erro interno", async () => {
     //ARRANGE
     spyFind.mockRejectedValue(new Error("ERRO - Mock"));
 
     const event = { id: 10000 };
 
-    //ACT
-    const response = await consultarTarefa(event);
+    //ACT + ASSERT
+    await expect(consultarTarefa(event)).rejects  
+      .toThrow("Erro interno no servidor");
 
-    //ASSERT
-    expect(response.statusCode).toBe(500);
-    expect(response.body).toMatch(/Erro interno no servidor/);
+    expect(spyFind).toHaveBeenCalledWith(event);
+    
   });
 
-  it("Deveria retornar 200 ao consultar Tarefa existente", async () => {
+  it("Deveria retornar TarefaEncontrada ao consultar Tarefa existente", async () => {
     //ARRANGE
     spyFind.mockResolvedValue({ nome: "TarefaTeste", descricao: "Descricao TarefaTeste", feito: true });
 
@@ -46,11 +50,11 @@ describe("Testes em consultarTarefa (GET)", () => {
     const response = await consultarTarefa(event);
 
     //ASSERT
-    const tarefa = JSON.parse(response.body);
-    expect(response.statusCode).toBe(200);
+    expect(spyFind).toHaveBeenCalledTimes(1);
+    expect(spyFind).toHaveBeenCalledWith(event);
 
-    expect(tarefa.nome).toBe("TarefaTeste");
-    expect(tarefa.descricao).toBe("Descricao TarefaTeste");
-    expect(tarefa.feito).toBeTruthy();
+    expect(response.nome).toBe("TarefaTeste");
+    expect(response.descricao).toBe("Descricao TarefaTeste");
+    expect(response.feito).toBeTruthy();
   });
 });

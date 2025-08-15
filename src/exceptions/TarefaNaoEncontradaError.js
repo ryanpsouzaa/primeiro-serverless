@@ -1,3 +1,5 @@
+const TarefaError = require("../exceptions/TarefaError.js");
+
 class TarefaNaoEncontrada extends TarefaError{
   constructor(message = "Tarefa não encontrada"){
     super(message, 404);

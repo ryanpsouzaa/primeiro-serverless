@@ -4,6 +4,13 @@ const {
   atualizarTarefa, realizarTarefa, excluirTarefa
 } = require("../services/tarefaService.js");
 
+function retornarErroResponse(erro, mensagem = erro.message){
+  return{
+    statusCode: erro.statusCode || 500,
+    body: JSON.stringify({erro: mensagem})
+  };
+}
+
 async function getTarefas(event) {
   try{
     const response = await listarTarefas();
@@ -14,10 +21,7 @@ async function getTarefas(event) {
     };
 
   }catch(erro){
-    return{
-      statusCode: erro.statusCode,
-      body: JSON.stringify({erro: erro.message})
-    }
+    return retornarErroResponse(erro);
   }
 }
 
@@ -37,10 +41,7 @@ async function getOneTarefa(event){
       }
 
     }catch(erro){
-      return{
-        statusCode: erro.statusCode,
-        body: JSON.stringify({erro: erro.message})
-      }
+      return retornarErroResponse(erro);
     }
   }
 }
@@ -65,10 +66,7 @@ async function tarefaRealizada(event){
       }
 
     }catch(erro){
-      return{
-        statusCode: erro.statusCode,
-        body: JSON.stringify({erro: erro.message})
-      }
+      return retornarErroResponse(erro);
     }
   }
 }
@@ -100,10 +98,7 @@ async function postTarefas(event){
     }
 
   }catch(erro){
-    return{
-      statusCode: erro.statusCode,
-      body: JSON.stringify({erro: erro.message})
-    }
+    return retornarErroResponse(erro)
   }
 } 
 
@@ -133,10 +128,7 @@ async function putTarefa(event){
     };
 
   }catch(erro){
-    return{
-      statusCode: erro.statusCode,
-      body: JSON.stringify({erro: erro.message})
-    }
+    return retornarErroResponse(erro);
   }
 }
 
@@ -159,10 +151,7 @@ async function deleteTarefa(event){
     }
 
   }catch(erro){
-    return{
-      statusCode: erro.statusCode,
-      body: JSON.stringify({erro: erro.message})
-    }
+    return retornarErroResponse(erro);
   }
 }
 

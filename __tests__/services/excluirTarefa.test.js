@@ -1,6 +1,10 @@
 const { excluirTarefa } = require("../../src/services/tarefaService.js");
 const Tarefa = require("../../src/schemas/Tarefa.js");
 
+beforeEach(()=>{
+  jest.resetAllMocks()
+});
+
 jest.mock("../../config/dbConnect.js", () => ({
   conectarBancoDados: jest.fn().mockResolvedValue()
 }));
@@ -8,34 +12,34 @@ jest.mock("../../config/dbConnect.js", () => ({
 const spyDelete = jest.spyOn(Tarefa, "findByIdAndDelete");
 
 describe("Testes em excluirTarefa (DELETE)", () => {
-  it("Deveria retornar 404 por Tarefa inexistente", async () => {
+  it("Deveria retornar TarefaNaoEncontradaError por Tarefa inexistente", async () => {
     //ARRANGE
     const event = {id: 1000};
 
     spyDelete.mockResolvedValue(null);
 
-    //ACT
-    const response = await excluirTarefa(event);
+    //ACT + ASSERT
+    await expect(excluirTarefa(event)).rejects
+      .toThrow("Tarefa não encontrada");
 
-    //ASSERT
-    expect(response.statusCode).toBe(404);
-    expect(response.body).toMatch(/Tarefa não encontrada/);
+    expect(spyDelete).toHaveBeenCalledWith(event);
+    expect(spyDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("Deveria retornar 500 por erro interno", async () => {
+  it("Deveria retornar TarefaError por erro interno", async () => {
     //ARRANGE
     const event = {id: 1000};
 
     spyDelete.mockRejectedValue(new Error("ERROR - Mock"));
-    //ACT
-    const response = await excluirTarefa(event);
 
-    //ASSERT
-    expect(response.statusCode).toBe(500);
-    expect(response.body).toMatch(/Erro interno no servidor/);
+    //ACT + ASSERT
+    await expect(excluirTarefa(event)).rejects
+      .toThrow("Erro interno no servidor");
+
+    expect(spyDelete).toHaveBeenCalledWith(event);
   });
 
-  it("Deveria retornar 200 ao deletar Tarefa com sucesso", async () => {
+  it("Deveria retornar tarefaExcluida ao deletar Tarefa com sucesso", async () => {
     //ARRANGE
     const event = {id: 1000}
 
@@ -45,7 +49,9 @@ describe("Testes em excluirTarefa (DELETE)", () => {
     const response = await excluirTarefa(event);
 
     //ASSERT
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toMatch(/Tarefa excluída com sucesso/);
+    expect(spyDelete).toHaveBeenCalledWith(event);
+    expect(spyDelete).toHaveBeenCalledTimes(1);
+    
+    expect(response.nome).toBe("TESTE");
   });
 });

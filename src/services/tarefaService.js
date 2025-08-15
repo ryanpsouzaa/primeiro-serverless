@@ -115,7 +115,7 @@ async function atualizarTarefa(id, dados){
       if(!tarefaAlterada){
         throw new TarefaNaoEncontrada();
       }
-      
+
       return tarefaAlterada;
 
     }else{
@@ -124,7 +124,7 @@ async function atualizarTarefa(id, dados){
     }
 
   }catch(erro){
-    throw new TarefaError();
+    tratarErro(erro);
   }
 }
 
@@ -138,7 +138,7 @@ async function excluirTarefa(id){
     return exclusaoResultado;
 
   }catch(erro){
-    throw new TarefaError();
+    tratarErro(erro);
   }
 }
 
